@@ -1,0 +1,22 @@
+{
+  "name": "learn-three",
+  "version": "1.0.0",
+  "description": "Learn THREEJS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DandiIndraWijaya/learn-three-js.git"
+  },
+  "keywords": [
+    "three.js"
+  ],
+  "author": "Dandi Indra Wijaya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DandiIndraWijaya/learn-three-js/issues"
+  },
+  "homepage": "https://github.com/DandiIndraWijaya/learn-three-js#readme"
+}
