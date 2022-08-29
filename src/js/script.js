@@ -105,13 +105,48 @@ scene.add(sLightHelper)
 // scene.fog = new THREE.Fog(0xFFFFFF, 0 , 200)
 scene.fog = new THREE.FogExp2(0xFFFFFF, 0.01)
 
+const plane2Geometry = new THREE.PlaneGeometry(10, 10, 10, 10)
+const plane2Material = new THREE.MeshBasicMaterial({
+  color: 0xFFFFFF,
+  wireframe: true
+})
+const plane2 = new THREE.Mesh(plane2Geometry, plane2Material)
+scene.add(plane2)
+plane2.position.set(10, 10, 15)
+
+plane2.geometry.attributes.position.array[0] -= 10 * Math.random()
+plane2.geometry.attributes.position.array[1] -= 10 * Math.random()
+plane2.geometry.attributes.position.array[2] -= 10 * Math.random()
+const lastPointZ = plane2.geometry.attributes.position.array.length - 1
+plane2.geometry.attributes.position.array[lastPointZ] -= 10 * Math.random()
+
+const sphere3Geometry = new THREE.SphereGeometry(4)
+const vShader = `
+  void main() {
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`
+
+const fShader = `
+  void main() {
+    gl_FragColor = vec4(0.5, 0.5, 1.0, 1.0);
+  }
+`
+const sphere3Material = new THREE.ShaderMaterial({
+  vertexShader: vShader,
+  fragmentShader: fShader
+})
+const sphere3 = new THREE.Mesh(sphere3Geometry, sphere3Material)
+scene.add(sphere3)
+sphere3.position.set(5, 5, 14)
+
 const gui = new dat.GUI()
 
 let options = {
   sphereColor: '#ffea00',
   wireframe: false,
   speed: 0.02,
-  angle: 0,
+  angle: 0.1,
   penumbra: 0,
   intensity: 1
 }
@@ -132,6 +167,17 @@ gui.add(options, 'intensity', 0, 1)
 
 let step = 0
 
+const mousePosition = new THREE.Vector2()
+
+window.addEventListener('mousemove', (e) => {
+  mousePosition.x = (e.clientX / window.innerWidth) * 2 - 1
+  mousePosition.y = - (e.clientY / window.innerHeight) * 2 + 1
+})
+
+const rayCaster = new THREE.Raycaster()
+
+const sphereId = sphere.id
+
 const animate = (time) => {
   box.rotation.x = time / 1000
   box.rotation.y = time / 1000
@@ -144,7 +190,27 @@ const animate = (time) => {
   spotLight.intensity = options.intensity
   sLightHelper.update()
 
+  rayCaster.setFromCamera(mousePosition, camera)
+  const intersects = rayCaster.intersectObjects(scene.children)
+  for(let i = 0; i < intersects.length; i++){
+    if(intersects[i].object.id === sphereId){
+      intersects[i].object.material.color.set(0xFF0000)
+    }
+  }
+
+  plane2.geometry.attributes.position.array[0] = 10 * Math.random()
+  plane2.geometry.attributes.position.array[1] = 10 * Math.random()
+  plane2.geometry.attributes.position.array[2] = 10 * Math.random()
+  plane2.geometry.attributes.position.array[lastPointZ] = 10 * Math.random()
+  plane2.geometry.attributes.position.needsUpdate = true
+
   renderer.render(scene, camera)
 }
 
 renderer.setAnimationLoop(animate)
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight
+  camera.updateProjectionMatrix()
+  renderer.setSize(window.innerWidth, window.innerHeight)
+})
